@@ -1,16 +1,13 @@
-// Importazione delle librerie
 const express = require('express');
 const axios = require('axios');
 require('dotenv').config();
 
-// Inizializzazione dell'app Express
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Funzione per ottenere la qualità dell'aria da AirVisual
-const getAirQuality = async (city) => {
+const getAirQuality = async () => {
     const apiKey = process.env.AIRVISUAL_API_KEY;
-    const url = `http://api.iqair.com/v1/airquality?city=${city}&key=${apiKey}`;
+    const url = `http://api.airvisual.com/v2/nearest_city?key=${apiKey}`;
 
     try {
         const response = await axios.get(url);
@@ -21,40 +18,48 @@ const getAirQuality = async (city) => {
     }
 };
 
-// Funzione per ottenere il meteo da OpenWeatherMap
-const getWeather = async (city) => {
-    const apiKey = process.env.OPENWEATHER_API_KEY;
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+app.get('/api/info', async (req, res) => {
+    const airQualityData = await getAirQuality();
+    
+    if (airQualityData) {
+        const { city, state, country, location, current } = airQualityData.data;
+        const { pollution, weather } = current;
 
-    try {
-        const response = await axios.get(url);
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching weather:', error);
-        return null;
-    }
-};
-
-// Route per ottenere informazioni sulla qualità dell'aria e meteo
-app.get('/api/info/:city', async (req, res) => {
-    const { city } = req.params;
-
-    // Chiamata alle API
-    const airQuality = await getAirQuality(city);
-    const weather = await getWeather(city);
-
-    if (airQuality && weather) {
+        // Costruzione della risposta da inviare al frontend
         res.json({
-            city,
-            airQuality: airQuality.data,
-            weather: weather.main
+            status: airQualityData.status,
+            data: {
+                city: city,
+                state: state,
+                country: country,
+                location: location,
+                current: {
+                    pollution: {
+                        ts: pollution.ts,
+                        aqius: pollution.aqius,
+                        mainus: pollution.mainus,
+                        aqicn: pollution.aqicn,
+                        maincn: pollution.maincn
+                    },
+                    weather: {
+                        ts: weather.ts,
+                        tp: weather.tp,
+                        pr: weather.pr,
+                        hu: weather.hu,
+                        ws: weather.ws,
+                        wd: weather.wd,
+                        ic: weather.ic
+                    }
+                }
+            }
         });
     } else {
-        res.status(500).json({ error: 'Error fetching data from external APIs' });
+        // Se c'è un errore nel recuperare i dati, restituiamo un errore
+        res.status(500).json({ error: 'Error fetching air quality data' });
     }
 });
 
-// Avvio del server
+app.use(express.static('public'));
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
