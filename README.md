@@ -20,19 +20,20 @@ cd node-api
 ```
 
 2. Install dependencies:
-
+```
 npm install
-
-    Create a .env file with your API keys:
-
+```
+Create a .env file with your API keys:
+```
 AIRVISUAL_API_KEY=your_airvisual_api_key
 OPENWEATHER_API_KEY=your_openweather_api_key
-
-    Run the app:
-
+```
+Run the app:
+```
 node index.js
+```
 
-    Visit the endpoint in your browser or make a GET request:
+Visit the endpoint in your browser or make a GET request:
 
 http://localhost:3000/api/info/{city}
 
