@@ -15,7 +15,7 @@ A simple Node.js project that queries multiple external APIs to get real-time da
 1. Clone this repository:
 
 ```bash
-git clone https://github.com/yourusername/node-api.git
+git clone https://github.com/Forz70043/node-api.git
 cd node-api
 ```
 
